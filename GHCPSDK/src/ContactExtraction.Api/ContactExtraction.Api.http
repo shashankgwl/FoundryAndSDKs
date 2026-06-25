@@ -1,0 +1,13 @@
+@ContactExtraction.Api_HostAddress = http://localhost:5111
+
+### Health check
+GET {{ContactExtraction.Api_HostAddress}}/health
+Accept: application/json
+
+### Extract contacts from a PDF
+POST {{ContactExtraction.Api_HostAddress}}/api/extraction
+Content-Type: application/json
+
+{
+  "fileName": "sample.pdf"
+}

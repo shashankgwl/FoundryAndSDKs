@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "foundryEndpoint": {
+      "value": "${FOUNDRY_ENDPOINT}"
+    },
+    "foundryDeploymentName": {
+      "value": "${FOUNDRY_DEPLOYMENT_NAME}"
+    },
+    "foundryAccountName": {
+      "value": "${FOUNDRY_ACCOUNT_NAME}"
+    }
+  }
+}

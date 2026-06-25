@@ -1,0 +1,12 @@
+# Ignore Word documents
+*.docx
+
+# .NET / build outputs
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.cache
+*.log

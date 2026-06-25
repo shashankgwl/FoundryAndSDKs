@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+.git/
+.gitignore
+*.NOTREQUIRED
+pdfs/
+scripts/
+tests/
+README.md
+**/*.user

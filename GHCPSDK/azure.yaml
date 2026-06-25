@@ -1,0 +1,8 @@
+name: ghcpsdk-contact-extraction
+metadata:
+  template: ghcpsdk-contact-extraction@0.0.1-beta
+services:
+  api:
+    project: ./src/ContactExtraction.Api
+    language: dotnet
+    host: containerapp
