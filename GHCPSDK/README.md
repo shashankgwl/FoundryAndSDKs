@@ -90,57 +90,17 @@ $env:AZURE_CLIENT_ID="<client-id>"
 $env:AZURE_CLIENT_SECRET="<client-secret>"
 ```
 
-## Build and run locally
+## Run the service in Docker first
 
-From the repo root:
+The easiest way to validate the full flow is to start the API in Docker and then invoke it with the PowerShell helper script.
 
-```powershell
-dotnet restore
-
-dotnet test tests/ContactExtraction.Api.Tests/ContactExtraction.Api.Tests.csproj
-```
-
-Run the API locally:
-
-```powershell
-dotnet run --project src/ContactExtraction.Api --urls http://localhost:5111
-```
-
-The API will expose:
-
-- `GET /health`
-- `POST /Extraction`
-
-Example request body:
-
-```json
-{
-  "fileName": "contact_ppt.pptx"
-}
-```
-
-The filename must match the blob object name exactly.
-
-## Call the API with the helper script
-
-The repository includes a PowerShell helper:
-
-```powershell
-cd scripts
-./Invoke-ContactExtraction.ps1 -FileName 'contact_ppt.pptx'
-```
-
-By default it calls `http://localhost:5111/Extraction`.
-
-## Build and run with Docker
-
-Build the image:
+### 1) Build the container image
 
 ```powershell
 docker build -f src/ContactExtraction.Api/Dockerfile -t contact-extraction-api .
 ```
 
-Run the container and pass the required environment variables:
+### 2) Run the container with the required environment variables
 
 ```powershell
 docker run -d --name contact-extraction-api -p 5111:8080 `
@@ -158,10 +118,52 @@ docker run -d --name contact-extraction-api -p 5111:8080 `
   contact-extraction-api
 ```
 
-You can also use the provided helper script:
+### 3) Verify the service is up
+
+```powershell
+Invoke-RestMethod http://localhost:5111/health
+```
+
+You should receive a JSON response with the status `all is well`.
+
+### 4) Run the PowerShell helper to trigger extraction
+
+The repository includes a helper script that sends the request to the running service:
+
+```powershell
+cd scripts
+./Invoke-ContactExtraction.ps1 -FileName 'contact_ppt.pptx'
+```
+
+This script posts to `http://localhost:5111/Extraction` with the filename you provide. The filename must exactly match the blob name in Azure Storage.
+
+If you prefer, you can also use the Docker helper script to start the container automatically:
 
 ```powershell
 ./scripts/Run-ContactExtractionDocker.ps1
+```
+
+## Build and run locally
+
+If you want to run the API directly on your machine instead of in Docker, use:
+
+```powershell
+dotnet restore
+
+dotnet test tests/ContactExtraction.Api.Tests/ContactExtraction.Api.Tests.csproj
+```
+
+Run the API locally:
+
+```powershell
+dotnet run --project src/ContactExtraction.Api --urls http://localhost:5111
+```
+
+Then run the same PowerShell helper:
+
+```powershell
+cd scripts
+./Invoke-ContactExtraction.ps1 -FileName 'contact_ppt.pptx'
 ```
 
 ## Expected behavior

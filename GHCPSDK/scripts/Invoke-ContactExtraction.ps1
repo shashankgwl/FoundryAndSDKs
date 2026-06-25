@@ -1,6 +1,6 @@
 param(
-    [Parameter(Mandatory = $true)]
-    [string]$FileName,
+    
+    [string]$FileName = "cartoon_specimen_id_02.pdf",
 
     [string]$BaseUrl = "http://localhost:5111"
 )
