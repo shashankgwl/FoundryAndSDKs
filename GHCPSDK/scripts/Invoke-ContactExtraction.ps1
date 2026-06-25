@@ -1,20 +1,26 @@
 param(
-    
-    [string]$FileName = "cartoon_specimen_id_02.pdf",
+    [Parameter(Mandatory = $false)]
+    [string[]]$FileName = @("cartoon_specimen_id_06.pdf", "specimen_id_05_preview.png", "contact_ppt.pptx"),
 
     [string]$BaseUrl = "http://localhost:5111"
 )
 
-$body = @{ fileName = $FileName } | ConvertTo-Json
+foreach ($name in $FileName) {
+    $body = @{ fileName = $name } | ConvertTo-Json
 
-try {
-    $response = Invoke-RestMethod -Method Post -Uri "$BaseUrl/Extraction" -ContentType "application/json" -Body $body -ErrorAction Stop
-    $response | ConvertTo-Json -Depth 10
-}
-catch {
-    Write-Error $_.Exception.Message
-    if ($_.ErrorDetails.Message) {
-        Write-Error $_.ErrorDetails.Message
+    try {
+        Write-Host "Calling extraction for: $name"
+        $response = Invoke-RestMethod -Method Post -Uri "$BaseUrl/Extraction" -ContentType "application/json" -Body $body -ErrorAction Stop
+        $response | ConvertTo-Json -Depth 10 | ForEach-Object {
+            Write-Host $_ -ForegroundColor DarkGreen
+        }
     }
-    exit 1
+    catch {
+        Write-Error "Failed for $name"
+        Write-Error $_.Exception.Message
+        if ($_.ErrorDetails.Message) {
+            Write-Error $_.ErrorDetails.Message
+        }
+        exit 1
+    }
 }
