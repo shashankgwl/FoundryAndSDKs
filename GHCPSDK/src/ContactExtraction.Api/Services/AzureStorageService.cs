@@ -8,10 +8,12 @@ namespace ContactExtraction.Api.Services;
 public sealed class AzureStorageService
 {
     private readonly BlobContainerClient _blobContainerClient;
-    private readonly TableClient _tableClient;
+    private readonly TableClient? _tableClient;
+    private readonly bool _skipTableStorage;
 
     public AzureStorageService(IConfiguration configuration)
     {
+        _skipTableStorage = ShouldSkipTableStorage(configuration);
         var accountName = configuration["AZURE_STORAGE_ACCOUNT_NAME"] ?? throw new InvalidOperationException("AZURE_STORAGE_ACCOUNT_NAME is required.");
         var containerName = configuration["AZURE_STORAGE_CONTAINER_NAME"] ?? throw new InvalidOperationException("AZURE_STORAGE_CONTAINER_NAME is required.");
         var tableName = configuration["AZURE_TABLE_NAME"] ?? "contacts";
@@ -26,7 +28,9 @@ public sealed class AzureStorageService
         var tableUri = $"https://{accountName}.table.core.windows.net";
 
         _blobContainerClient = new BlobContainerClient(new Uri($"{blobUri}/{containerName}"), credential, new BlobClientOptions());
-        _tableClient = new TableClient(new Uri(tableUri), tableName, credential, new TableClientOptions());
+        _tableClient = _skipTableStorage
+            ? null
+            : new TableClient(new Uri(tableUri), tableName, credential, new TableClientOptions());
     }
 
     public async Task<Stream> DownloadPdfAsync(string fileName, CancellationToken cancellationToken)
@@ -38,8 +42,18 @@ public sealed class AzureStorageService
         return stream;
     }
 
+    public static bool ShouldSkipTableStorage(IConfiguration configuration)
+    {
+        return string.Equals(configuration["SKIP_TABLE_STORAGE"], "true", StringComparison.OrdinalIgnoreCase);
+    }
+
     public async Task UpsertContactsAsync(IEnumerable<ContactRecord> contacts, CancellationToken cancellationToken)
     {
+        if (_skipTableStorage || _tableClient is null)
+        {
+            return;
+        }
+
         await _tableClient.CreateIfNotExistsAsync(cancellationToken);
 
         var batch = contacts.Select(contact => new TableTransactionAction(TableTransactionActionType.UpsertMerge, contact));

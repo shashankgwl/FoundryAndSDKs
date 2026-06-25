@@ -1,9 +1,23 @@
 using ContactExtraction.Api.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace ContactExtraction.Api.Tests;
 
 public sealed class CopilotExtractionServiceTests
 {
+    [Fact]
+    public void ShouldSkipTableStorage_ReturnsTrue_WhenConfigured()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["SKIP_TABLE_STORAGE"] = "true"
+            })
+            .Build();
+
+        Assert.True(AzureStorageService.ShouldSkipTableStorage(configuration));
+    }
+
     [Fact]
     public void BuildOpenAiBaseUrl_AppendsOpenAiV1()
     {
